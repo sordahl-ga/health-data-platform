@@ -1,0 +1,77 @@
+<HTML>
+  <HEAD>
+      <TITLE>NLP PostPage</TITLE>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+      <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+      <script src="js/jquery.filepicker.js"></script>
+      <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css">
+  </HEAD>
+ <BODY>
+<div class="outer">
+    <div class="top">
+            <h2 align=left>Send a File</h2>
+            <table border=0 width=800 height=600><tr><td><input data-label="Select File..." class="demo" type="file"></td></tr></table>
+            <input type="button" id="uploadfile" value="Upload">
+            <div id="prog" style="display: none;">Uploading...<progress min=0 max=0></progress></div>  
+    </div>
+    <div class="bot">
+           
+            <textarea id="textar" name="message" rows="10" cols="80">
+                </textarea>
+    </div>
+</div>
+
+<script>
+$( document ).ready(function() {
+    $("input[type='file'].demo").filepicker({
+        style: 'jquery-ui' // default, bootstrap or jquery-ui
+     });
+
+ $("#uploadfile").on('click', function() {
+    $('#uploadfile').prop('disabled', true);
+    $('#prog').show();
+    $.ajax({
+        // Your server script to process the upload
+        url: 'https://<your hdp transform functionapp url>/api/NLPExtractEntitiesFile?code=<your function app access key>&updatesearch=true,
+        type: 'POST',
+
+        // Form data
+        data: $('input[type=file]')[0].files[0],
+        // Tell jQuery not to process data or worry about content-type
+        // You *must* include these options!
+        cache: false,
+        contentType: "text/plain",
+        processData: false,
+    // Custom XMLHttpRequest
+        xhr: function() {
+            var myXhr = $.ajaxSettings.xhr();
+            if (myXhr.upload) {
+                // For handling the progress of the upload
+                myXhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        $('progress').attr({
+                            value: e.loaded,
+                            max: e.total,
+                        });
+                    }
+                } , false);
+                
+            }
+            return myXhr;
+        }
+    })
+    .done(function(data) {
+            $("#textar").val(JSON.stringify(data,null,2));
+            $('#prog').hide();
+            $('#uploadfile').prop('disabled', false);
+        })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+        $("#textar").val(errorThrown);
+        $('#prog').hide();
+        $('#uploadfile').prop('disabled', false);
+    });
+});
+});
+</script>
+</BODY>
+</HTML>
