@@ -27,7 +27,7 @@ Coming Soon!!!
 8. Obtain Access keys and Connect the HDP Internal VNET to the Platform Transform Function App:
     + [Access Azure Portal](https://portal.azure.com)
     + Goto the Resource Group created/selected under the subscription you installed too
-    + Click on the HDPTransformXXXX function app that was created with your install
+    + Click on the [HDPTransformXXXX function app](https://github.com/sordahl-ga/TransformFunctions/tree/hdporigin) that was created with your install
     + From the Overview Tab copy the URL to the Function App and save it for future reference
     + From the Configured Features Section of the Overview Tab click on Function App Settings and click the copy action next to the _master key in host keys. Securely save this key for future reference.
     + Click on the Platform Features Tab
