@@ -37,7 +37,6 @@ declare dbcollectionName="messages"
 declare dbthruput="400"
 declare dbkey=""
 declare dbendpoint="";
-declare repoAccessToken=${HDPREPOACCESSTOKEN:-f2700c035e153cdcdaf5a41442d38269d371fb10}
 declare repoURL="https://github.com/sordahl-ga/TransformFunctions"
 declare repoBranch="hdporigin"
 # Initialize parameters specified from command line
@@ -177,7 +176,7 @@ echo "Starting Health Data Platform Ingest deployment..."
 		#TIKAServer
 		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings TIKAServerurl=http://$tikaip:$tikaports/tika
 		#Deployment from GIT
-		az functionapp deployment source config --name $faname --resource-group $resourceGroupName --branch $repoBranch --repo-url $repoURL --manual-integration --git-token $repoAccessToken
+		az functionapp deployment source config --name $faname --resource-group $resourceGroupName --branch $repoBranch --repo-url $repoURL --manual-integration
 )
 
 
