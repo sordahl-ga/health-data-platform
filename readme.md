@@ -49,8 +49,16 @@ Coming Soon!!!
       ``` 
     + Congratulations!!! The text in the image file was extracted and Medical NLP run against it and search index updated with results.
 
-10. You can also send in HL7 messages using the local HL7 MLLP Relay or deploy the HL7 MLLP Relay using the VNET in the HDP you just deployed.  (runhl7relay or deployhl7relay) Documentation Coming Soon!!!    
-11. You can also post FHIR Messages using the FHIR Server deployed Documentation Coming Soon!!!    
+10. You can also send in HL7 messages using the local HL7 MLLP Relay or deploy the HL7 MLLP Relay using the VNET in the HDP you just deployed and a VPN Tunnel. To run a local copy of the HL7 MLLP Relay:
+    + Make sure [Docker](https://www.docker.com/) is installed and running in your linux or widnows environment
+    + From a command prompt run the runhl7relay.bash(linux) or runhl7relay.cmd(windows) passing in the Function App URI for saving HL7 to the DB and the function app access key as parameters.
+        ```
+        runhl7relay https://hdptransformxxxx.azurewebsites.net/api/TransformHL7SaveToDB "<function app key from above>"
+       ``` 
+    + You can now point any HL7 MLLP Engine to the HL7 Relay listening port and it will transfer messages to the Transform function app over https
+    + An appropriate HL7 ACK will be sent to the engine
+
+11. You can also post FHIR Mesages using the FHIR Server deployed Documentation Coming Soon!!!    
 ## Authors
 
 * **Steven Ordahl** - Microsoft HLS Apps and Infrastructure Cloud Architect
