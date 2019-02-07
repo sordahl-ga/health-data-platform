@@ -13,7 +13,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jettyVersion>9.2.6.v20141205</jettyVersion>
+		<jettyVersion>9.3.24.v20180605</jettyVersion>
 	</properties>
 <repositories>
 <repository>
@@ -263,7 +263,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.2.10.v20150310</version>
+			<version>9.3.24.v20180605</version>
 		</dependency>
 
 		<dependency>
