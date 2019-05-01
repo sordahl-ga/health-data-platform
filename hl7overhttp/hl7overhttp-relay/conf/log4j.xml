@@ -37,13 +37,12 @@
     may further increase by changing DEBUG to TRACE to
     see even more detail.   
     -->
-    <!-- 
+    
     <logger name="ca.uhn.hl7v2.hoh" additivity="false">
-    	<level value="DEBUG"></level>
+    	<level value="TRACE"></level>
     	<appender-ref ref="stdout"/>
     </logger>
-    -->
-     
+         
     <root>
         <priority value="INFO"></priority>
         <appender-ref ref="stdout"/>

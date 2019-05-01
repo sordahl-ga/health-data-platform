@@ -4,6 +4,8 @@ A versatile sample ingest platform for health data. Including HL7, FHIR, Unstruc
 CosmosDB database and data lake storage account.  There is an NLP pipeline that will extract and code medical concepts discovered in unstructured documents and images. An 
 Azure Search Index with extracted text content and medical concept facets is also created and dynamically updated on message/file ingest.
 
+![image info](./hdpingestarch.png)
+
 ## Public Demo Instructions
 Note: The public demo is subject to frequent updates and periodic unavailability for maintenance/improvements.
 

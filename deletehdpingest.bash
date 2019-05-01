@@ -6,11 +6,18 @@ IFS=$'\n\t'
 
 declare vnetsuffix="vnet"
 declare RES_GROUP=$1
+declare deployprefix=""
 declare VNET_NAME=$RES_GROUP$vnetsuffix
 declare SUBNET_NAME="aci-subnet"
 declare ctakes="ctakes"
 declare tika="tika"
 declare hl7relay="hl7relay"
+
+deployprefix=${RES_GROUP:0:14}
+deployprefix=${deployprefix//[^[:alnum:]]/}
+deployprefix=${deployprefix,,}
+
+VNET_NAME=$deployprefix$vnetsuffix
 
 NETWORK_PROFILE_SEARCH="$VNET_NAME-$SUBNET_NAME"
 
