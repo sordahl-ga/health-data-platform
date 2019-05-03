@@ -42,7 +42,7 @@ declare repoURL="https://github.com/sordahl-ga/TransformFunctions"
 declare repoBranch="hdporigin"
 declare deployprefix=""
 declare defdeployprefix=""
-declare storename=""
+declare storecontainername="hl7json"
 # Initialize parameters specified from command line
 while getopts ":i:g:n:l:p" arg; do
 	case "${arg}" in
@@ -150,26 +150,26 @@ echo "Starting Health Data Platform Ingest deployment..."
 (
 	set -x
 	    #Create comosdb for HL7 Transform Storage and Analysis
-		#echo "Creating CosmosDB(SQLAPI) Account for HL7 Message Transform Storage...."
-		#dbendpoint=$(az cosmosdb create --resource-group $resourceGroupName --name $deployprefix$dbaccountNameSuffix --kind GlobalDocumentDB --locations $resourceGroupLocation=0 --default-consistency-level "Session" --query "documentEndpoint" --out json | sed 's/"//g')
+		echo "Creating CosmosDB(SQLAPI) Account for HL7 Message Transform Storage...."
+		dbendpoint=$(az cosmosdb create --resource-group $resourceGroupName --name $deployprefix$dbaccountNameSuffix --kind GlobalDocumentDB --locations $resourceGroupLocation=0 --default-consistency-level "Session" --query "documentEndpoint" --out json | sed 's/"//g')
 		#Create database for ingestion
-		#echo "Creating ingest DB on CosmosDB Account..."
-		#temp=$(az cosmosdb database create --resource-group $resourceGroupName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName)
+		echo "Creating ingest DB on CosmosDB Account..."
+		temp=$(az cosmosdb database create --resource-group $resourceGroupName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName)
 		#Create the containing collection
-		#echo "Creating hl7 Collection on ingest DB..."
-		#temp=$(az cosmosdb collection create --resource-group $resourceGroupName --collection-name $dbcollectionName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName --partition-key-path /id --throughput $dbthruput)
-		#	echo "Creating ccd Collection on ingest DB..."
-		#temp=$(az cosmosdb collection create --resource-group $resourceGroupName --collection-name $dbccdcollectionName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName --partition-key-path /id --throughput $dbthruput)
-		#echo "Getting Access Key to Account..."
-		#dbkey=$(az cosmosdb list-keys --name $deployprefix$dbaccountNameSuffix --resource-group $resourceGroupName --query "primaryMasterKey" --out json | sed 's/"//g')
+		echo "Creating hl7 Collection on ingest DB..."
+		temp=$(az cosmosdb collection create --resource-group $resourceGroupName --collection-name $dbcollectionName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName --partition-key-path /id --throughput $dbthruput)
+		echo "Creating ccd Collection on ingest DB..."
+		temp=$(az cosmosdb collection create --resource-group $resourceGroupName --collection-name $dbccdcollectionName --name $deployprefix$dbaccountNameSuffix --db-name $dbdatabaseName --partition-key-path /id --throughput $dbthruput)
+		echo "Getting Access Key to Account..."
+		dbkey=$(az cosmosdb list-keys --name $deployprefix$dbaccountNameSuffix --resource-group $resourceGroupName --query "primaryMasterKey" --out json | sed 's/"//g')
 		#Create Storage Account
-		#echo "Creating Storage Account..."
-		#az storage account create --name $deployprefix$storageAccountNameSuffix --resource-group $resourceGroupName --location  $resourceGroupLocation --sku Standard_LRS --encryption blob
-		s#torageConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $deployprefix$storageAccountNameSuffix --query "connectionString" --out json | sed 's/"//g')
-		#Create Search Service
-		#echo "Creating Azure Search Instance..."
-		#az search service create -n $deployprefix$searchSuffix -g $resourceGroupName --sku basic -l $resourceGroupLocation
-		#searchKey=$(az search admin-key show --resource-group=$resourceGroupName --service-name=$deployprefix$searchSuffix  --query "primaryKey" --out json | sed 's/"//g')
+		echo "Creating Storage Account and Ingest container..."
+		az storage account create --name $deployprefix$storageAccountNameSuffix --resource-group $resourceGroupName --location  $resourceGroupLocation --sku Standard_LRS --encryption blob
+		storageConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $deployprefix$storageAccountNameSuffix --query "connectionString" --out json | sed 's/"//g')
+		az storage container create -n $storecontainername --connection-string $storageConnectionString
+		echo "Creating Azure Search Instance..."
+		az search service create -n $deployprefix$searchSuffix -g $resourceGroupName --sku basic -l $resourceGroupLocation
+		searchKey=$(az search admin-key show --resource-group=$resourceGroupName --service-name=$deployprefix$searchSuffix  --query "primaryKey" --out json | sed 's/"//g')
 		#Create CTAKES Container on VNET Internal IP expose ports
 		echo "Creating VNET and Deploying CTAKES..."
 		az container create --resource-group $resourceGroupName --name $deployprefix$ctakes --image $ctakesimage --ports $ctakesports --vnet $deployprefix$vnetsuffix --vnet-address-prefix $vnetipprefix --subnet $subnetname --subnet-address-prefix $subnetprefix --ip-address private
@@ -180,28 +180,28 @@ echo "Starting Health Data Platform Ingest deployment..."
 		az container create --resource-group $resourceGroupName --name $deployprefix$tika --image $tikaimage --ports $tikaports --vnet $deployprefix$vnetsuffix --subnet $subnetname --ip-address private
 		tikaip=$(az container show --name  $deployprefix$tika --resource-group $resourceGroupName  --query "ipAddress.ip" --out json | sed 's/"//g')
 		echo "Tika IP Address "$tikaip
-		#Create HL7 Relay
-		#echo "Deploying HL7 Relay..."
-		#az container create --resource-group $resourceGroupName --name $resourceGroupName$hl7relay --image $hl7relayimage --ports $hl7relayports --vnet $resourceGroupName$vnetsuffix --subnet $subnetname --ip-address private --environment-variables HL7OVERHTTPHEADERS=${HL7OVERHTTPHEADERS:-x-functions-key=<key>} HL7OVERHTTPDEST=${HL7OVERHTTPDEST:-<url>}
 		#Create Transform Functions App
 		#Create Service Plan
-		#echo "Deploying Transform Function App..."
-		#az appservice plan create -g  $resourceGroupName -n $deployprefix$serviceplanSuffix --number-of-workers 2 --sku S1
+		echo "Deploying Transform Function App..."
+		az appservice plan create -g  $resourceGroupName -n $deployprefix$serviceplanSuffix --number-of-workers 2 --sku P1v2
 		#Create the Transform Function App
-		#az functionapp create --name $faname --storage-account $deployprefix$storageAccountNameSuffix  --plan $deployprefix$serviceplanSuffix  --resource-group $resourceGroupName --runtime dotnet --os-type Windows
+		az functionapp create --name $faname --storage-account $deployprefix$storageAccountNameSuffix  --plan $deployprefix$serviceplanSuffix  --resource-group $resourceGroupName --runtime dotnet --os-type Windows
 		#Add App Settings
 		#CosmosDB
-		#az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CosmosDBConnection="AccountEndpoint="$dbendpoint";AccountKey="$dbkey
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CosmosDBConnection="AccountEndpoint="$dbendpoint";AccountKey="$dbkey
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CosmosDBNAME=$dbdatabaseName
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CosmosCCDCollection=$dbccdcollectionName
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CosmosHL7Collection=$dbcollectionName
 		#StorageAccount
-		#az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings StorageAccount=$storageConnectionString
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings StorageAccount=$storageConnectionString StorageAccountBlob=$storecontainername
 		#search service
-	    #az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings SearchServiceKey=$searchKey SearchServiceName=$deployprefix$searchSuffix SearchServiceIndexName=medical-documents
+	    az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings SearchServiceKey=$searchKey SearchServiceName=$deployprefix$searchSuffix SearchServiceIndexName=medical-documents
 		#CTAKES
-		#az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CTAKESFormat=XML CTAKESUMLSUser=${HDPUMLSUSER:-<user>} CTAKESUMLSPassword=${HDPUMLSPASSWORD:-<pass>} CTAKESServerURL=http://$ctakesip:$ctakesports/DemoServlet
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings CTAKESFormat=XML CTAKESUMLSUser=${HDPUMLSUSER:-<user>} CTAKESUMLSPassword=${HDPUMLSPASSWORD:-<pass>} CTAKESServerURL=http://$ctakesip:$ctakesports/DemoServlet
 		#TIKAServer
-		#az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings TIKAServerurl=http://$tikaip:$tikaports/tika
+		az functionapp config appsettings set --name $faname  --resource-group $resourceGroupName --settings TIKAServerurl=http://$tikaip:$tikaports/tika
 		#Deployment from GIT
-		#az functionapp deployment source config --name $faname --resource-group $resourceGroupName --branch $repoBranch --repo-url $repoURL --manual-integration
+		az functionapp deployment source config --name $faname --resource-group $resourceGroupName --branch $repoBranch --repo-url $repoURL --manual-integration
 	
 		)
 
